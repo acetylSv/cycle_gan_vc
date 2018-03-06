@@ -2,12 +2,11 @@ import tensorflow as tf
 from modules import *
 
 def build_generator(inputs):
-    # inputs_shape: [batch, w=128, c=513]
-
+    # inputs_shape: [batch, w=128, c=26]
     with tf.variable_scope('layer1_conv'):
         # h1_shape: [batch, w=128, c=128]
         h1 = conv1d(inputs, filters=128, size=15, dilation=1, strides=1, \
-                padding="SAME", use_bias=False, activation_fn=None)
+                padding="SAME", use_bias=True, activation_fn=None)
         h1 = GLU(h1)
 
     with tf.variable_scope('layer2_downsample'):
@@ -35,7 +34,7 @@ def build_generator(inputs):
     with tf.variable_scope('layer10_upsample'):
         # h10_shape: [batch, w=32, c=1024] -> [batch, w=64, c=512]
         h10 = conv1d(h9, filters=1024, size=5, dilation=1, strides=1, \
-                padding="SAME", use_bias=False, activation_fn=None)
+                padding="SAME", use_bias=True, activation_fn=None)
         h10 = pixel_shuffler(h10)
         h10 = instance_norm(h10)
         h10 = GLU(h10)
@@ -43,15 +42,15 @@ def build_generator(inputs):
     with tf.variable_scope('layer11_upsample'):
         # h11_shape: [batch, w=64, c=512] -> [batch, w=128, c=256]
         h11 = conv1d(h10, filters=512, size=5, dilation=1, strides=1, \
-            padding="SAME", use_bias=False, activation_fn=None)
+            padding="SAME", use_bias=True, activation_fn=None)
         h11 = pixel_shuffler(h11)
         h11 = instance_norm(h11)
         h11 = GLU(h11)
 
     with tf.variable_scope('layer12_conv'):
         # h12_shape: [batch, w=128, c=513]
-        h12 = conv1d(h11, filters=513, size=15, dilation=1, strides=1, \
-                padding="SAME", use_bias=False, activation_fn=None)
+        h12 = conv1d(h11, filters=hp.mcep_dim, size=15, dilation=1, strides=1, \
+                padding="SAME", use_bias=True, activation_fn=None)
     return h12
 
 def build_discriminator(inputs):
@@ -63,7 +62,7 @@ def build_discriminator(inputs):
     with tf.variable_scope('layer1_conv'):
         # h1_shape: [batch, h=513, w=64, c=128]
         h1 = conv2d(inputs_reshape, filters=128, size=[3,3], dilation=[1,1], strides=[1,2], \
-                padding="SAME", use_bias=False, activation_fn=None)
+                padding="SAME", use_bias=True, activation_fn=None)
         h1 = GLU(h1)
 
     with tf.variable_scope('layer2_downsample'):

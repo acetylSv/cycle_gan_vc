@@ -9,9 +9,14 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import librosa
+import soundfile as sf
 import h5py
 from copy import deepcopy
 import librosa
+import pyworld as pw
+import pysptk
+from pysptk.synthesis import LMADF, MLSADF, Synthesizer
+
 from hyperparams import Hyperparams as hp
 
 def get_spectrograms(y, sr):
@@ -68,6 +73,29 @@ def invert_spectrogram(spectrogram):
     spectrogram: [f, t]
     '''
     return librosa.istft(spectrogram, hp.hop_length, win_length=hp.win_length, window="hann")
+
+def get_MCEPs(y):
+    '''Convert speech into features (using default options)'''
+    
+    _f0_h, t_h = pw.harvest(y, hp.sr)
+    f0_h = pw.stonemask(y, _f0_h, t_h, hp.sr)
+    sp_h = pw.cheaptrick(y, f0_h, t_h, hp.sr)
+    ap_h = pw.d4c(y, f0_h, t_h, hp.sr)
+    mc = pysptk.sp2mc(sp_h, order=hp.order, alpha=hp.alpha)
+
+    return mc, f0_h, ap_h
+
+def MCEPs2wav(mc, f0, ap, mc_mean, mc_std, logf0_mean, logf0_std):
+    '''Generate wave file from Worlds feat'''
+    logf0_mean = np.squeeze(logf0_mean)
+    logf0_std = np.squeeze(logf0_std)
+    mc = (mc * mc_std) + mc_mean
+    f0 = (f0 * logf0_std) + logf0_mean
+    f0 = np.exp(f0) - 1
+    sp = pysptk.mc2sp(np.float64(mc), alpha=hp.alpha, fftlen=hp.n_fft)
+    wav = pw.synthesize(np.float64(f0), np.float64(sp), np.float64(ap), hp.sr, pw.default_frame_period)
+
+    return wav.astype(np.float32)
 
 def plot_alignment(alignment, gs, idx):
     fig, ax = plt.subplots()
