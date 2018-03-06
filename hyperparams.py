@@ -11,7 +11,7 @@ class Hyperparams:
     lr = 0.0001
     batch_size = 1
     fix_seq_length = 128
-    summary_period = 3
+    summary_period = 300
     save_period = 500
     LAMBDA_CYCLE = 10
     LAMBDA_IDENTITY = 5

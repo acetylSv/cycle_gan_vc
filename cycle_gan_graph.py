@@ -157,8 +157,8 @@ class Graph:
 
                 # Training Scheme
                 self.global_step = tf.Variable(0, name='global_step', trainable=False)
-                self.gen_optimizer = tf.train.AdamOptimizer(learning_rate=hp.lr*2)
-                self.dis_optimizer = tf.train.AdamOptimizer(learning_rate=hp.lr)
+                self.gen_optimizer = tf.train.AdamOptimizer(learning_rate=hp.lr*2, beta1=0.5)
+                self.dis_optimizer = tf.train.AdamOptimizer(learning_rate=hp.lr, beta1=0.5)
 
                 with tf.variable_scope('gen_train'):
                     gvs = self.gen_optimizer.compute_gradients(
