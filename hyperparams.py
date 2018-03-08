@@ -14,7 +14,7 @@ class Hyperparams:
     summary_period = 300
     save_period = 500
     LAMBDA_CYCLE = 10
-    LAMBDA_IDENTITY = 5
+    LAMBDA_IDENTITY = 0
 
     # Signal Processing
     sr = 16000

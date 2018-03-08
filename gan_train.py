@@ -67,6 +67,8 @@ def train():
         B_mc_mean, B_mc_std, B_logf0_mean, B_logf0_std = dl.get_partition(B_idss)
 
     while True:
+        if gs > 200000:
+            exit()
         A_normed_mcs, A_normed_logf0s, A_aps, \
             A_mc_mean, A_mc_std, A_logf0_mean, A_logf0_std = \
             my_shuffle(A_normed_mcs, A_normed_logf0s, A_aps, \

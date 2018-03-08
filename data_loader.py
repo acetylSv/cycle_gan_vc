@@ -50,7 +50,12 @@ class Data_loader:
         return np.array(all_mcs), np.array(all_f0s), np.array(all_aps), \
                 np.array(all_mc_mean), np.array(all_mc_std), \
                 np.array(all_logf0_mean), np.array(all_logf0_std)
-
+    
+    def get_uttrs(self, A_ids, B_ids):
+        A_uttrs = [x for x in self.hf['test'][A_ids].keys()][:5]
+        B_uttrs = [x for x in self.hf['test'][B_ids].keys()][:5]
+        return A_uttrs, B_uttrs
+    
     def get_test_partition(self, ids, uttr_id):
         mcs = self.hf['test'][ids][uttr_id]['normed_mc'][:]
         f0s = self.hf['test'][ids][uttr_id]['normed_logf0'][:]
@@ -60,7 +65,9 @@ class Data_loader:
         mc_std = self.hf['test'][ids][uttr_id]['mc_std'][:]
         logf0_mean = self.hf['test'][ids][uttr_id]['logf0_mean'][:]
         logf0_std = self.hf['test'][ids][uttr_id]['logf0_std'][:]
-        
+       
+        print(mcs.shape, f0s.shape, aps.shape, mc_mean.shape, mc_std.shape, logf0_mean.shape, logf0_std.shape)
+
         mcs = np.expand_dims(np.reshape(mcs, [-1, hp.mcep_dim]), 0)
         f0s = np.expand_dims(np.reshape(f0s, [-1]), 0)
         aps = np.expand_dims(np.reshape(aps, [-1, 1+hp.n_fft//2]), 0)

@@ -17,27 +17,40 @@ class Graph:
         # Set GAN Loss Criterion (Defined in module.py)
         self.criterion = mae_criterion
     
-        if mode=='test':
-            batch_size = None
+        if mode=='train':
+            # normalization term
+            self.A_mc_mean = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.mcep_dim))
+            self.B_mc_mean = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.mcep_dim))
+            self.A_mc_std = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.mcep_dim))
+            self.B_mc_std = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.mcep_dim))
+            self.A_logf0s_mean = tf.placeholder(tf.float32, shape=(hp.batch_size,1))
+            self.A_logf0s_std = tf.placeholder(tf.float32, shape=(hp.batch_size,1))
+            self.B_logf0s_mean = tf.placeholder(tf.float32, shape=(hp.batch_size,1))
+            self.B_logf0s_std = tf.placeholder(tf.float32, shape=(hp.batch_size,1))
+            # input
+            self.A_x = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length, hp.mcep_dim))
+            self.A_f0 = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length))
+            self.A_ap = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length, 1+hp.n_fft//2))
+            self.B_x = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length, hp.mcep_dim))
+            self.B_f0 = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length))
+            self.B_ap = tf.placeholder(tf.float32, shape=(hp.batch_size, hp.fix_seq_length, 1+hp.n_fft//2))
         else:
-            batch_size = hp.batch_size
-        
-        # normalization term
-        self.A_mc_mean = tf.placeholder(tf.float32, shape=(batch_size, hp.mcep_dim))
-        self.B_mc_mean = tf.placeholder(tf.float32, shape=(batch_size, hp.mcep_dim))
-        self.A_mc_std = tf.placeholder(tf.float32, shape=(batch_size, hp.mcep_dim))
-        self.B_mc_std = tf.placeholder(tf.float32, shape=(batch_size, hp.mcep_dim))
-        self.A_logf0s_mean = tf.placeholder(tf.float32, shape=(batch_size,1))
-        self.A_logf0s_std = tf.placeholder(tf.float32, shape=(batch_size,1))
-        self.B_logf0s_mean = tf.placeholder(tf.float32, shape=(batch_size,1))
-        self.B_logf0s_std = tf.placeholder(tf.float32, shape=(batch_size,1))
-        # input
-        self.A_x = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length, hp.mcep_dim))
-        self.A_f0 = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length))
-        self.A_ap = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length, 1+hp.n_fft//2))
-        self.B_x = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length, hp.mcep_dim))
-        self.B_f0 = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length))
-        self.B_ap = tf.placeholder(tf.float32, shape=(batch_size, hp.fix_seq_length, 1+hp.n_fft//2))
+            # normalization term
+            self.A_mc_mean = tf.placeholder(tf.float32, shape=(None, hp.mcep_dim))
+            self.B_mc_mean = tf.placeholder(tf.float32, shape=(None, hp.mcep_dim))
+            self.A_mc_std = tf.placeholder(tf.float32, shape=(None, hp.mcep_dim))
+            self.B_mc_std = tf.placeholder(tf.float32, shape=(None, hp.mcep_dim))
+            self.A_logf0s_mean = tf.placeholder(tf.float32, shape=(None))
+            self.A_logf0s_std = tf.placeholder(tf.float32, shape=(None))
+            self.B_logf0s_mean = tf.placeholder(tf.float32, shape=(None))
+            self.B_logf0s_std = tf.placeholder(tf.float32, shape=(None))
+            # input
+            self.A_x = tf.placeholder(tf.float32, shape=(1, None, hp.mcep_dim))
+            self.A_f0 = tf.placeholder(tf.float32, shape=(1, None))
+            self.A_ap = tf.placeholder(tf.float32, shape=(1, None, 1+hp.n_fft//2))
+            self.B_x = tf.placeholder(tf.float32, shape=(1, None, hp.mcep_dim))
+            self.B_f0 = tf.placeholder(tf.float32, shape=(1, None))
+            self.B_ap = tf.placeholder(tf.float32, shape=(1, None, 1+hp.n_fft//2))
 
         # Domain-Transfering
         with tf.variable_scope('gen_A_to_B'):
@@ -58,28 +71,18 @@ class Graph:
         with tf.variable_scope('gen_B_to_A', reuse=True):
             self.A_identity_y_hat = build_generator(self.A_x)
 
-        # Discriminator
-        with tf.variable_scope('dis_A') as scope:
-            self.v_A_real_logits, self.v_A_real = build_discriminator(self.A_x)
-            scope.reuse_variables()
-            self.v_A_fake_logits, self.v_A_fake = build_discriminator(self.A_y_hat)
+        if mode is 'train':
+            # Discriminator
+            with tf.variable_scope('dis_A') as scope:
+                self.v_A_real_logits, self.v_A_real = build_discriminator(self.A_x)
+                scope.reuse_variables()
+                self.v_A_fake_logits, self.v_A_fake = build_discriminator(self.A_y_hat)
 
-        with tf.variable_scope('dis_B') as scope:
-            self.v_B_real_logits, self.v_B_real = build_discriminator(self.B_x)
-            scope.reuse_variables()
-            self.v_B_fake_logits, self.v_B_fake  = build_discriminator(self.B_y_hat)
+            with tf.variable_scope('dis_B') as scope:
+                self.v_B_real_logits, self.v_B_real = build_discriminator(self.B_x)
+                scope.reuse_variables()
+                self.v_B_fake_logits, self.v_B_fake  = build_discriminator(self.B_y_hat)
 
-        self.gen_vars = [v for v in tf.trainable_variables() if v.name.startswith('gen_')]
-        self.dis_vars = [v for v in tf.trainable_variables() if v.name.startswith('dis_')]
-        '''
-        for v in self.dis_vars : print(v)
-        print('----------------------')
-        for v in self.gen_vars : print(v)
-        '''
-        '''
-        vs = [v for v in tf.trainable_variables()]
-        for v in vs : print(v)
-        '''
 
         # monitor
         self.audio_A = tf.py_func(MCEPs2wav, [self.A_x[0], self.A_f0[0], self.A_ap[0], \
@@ -104,6 +107,18 @@ class Graph:
                 [self.B_identity_y_hat[0], self.B_f0[0], self.B_ap[0], \
                 self.B_mc_mean, self.B_mc_std, self.B_logf0s_mean, self.B_logf0s_std], tf.float32)
         if mode in ("train"):
+            # var collection
+            self.gen_vars = [v for v in tf.trainable_variables() if v.name.startswith('gen_')]
+            self.dis_vars = [v for v in tf.trainable_variables() if v.name.startswith('dis_')]
+            '''
+            for v in self.dis_vars : print(v)
+            print('----------------------')
+            for v in self.gen_vars : print(v)
+            '''
+            '''
+            vs = [v for v in tf.trainable_variables()]
+            for v in vs : print(v)
+            '''
             # Loss
             ## Generator Loss
             self.loss_gen_A = self.criterion(self.v_B_fake_logits, tf.ones_like(self.v_B_fake_logits))

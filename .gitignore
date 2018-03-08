@@ -4,3 +4,7 @@ cycle_gan_vc_log/
 get_train_infer.py
 test.py
 get.sh
+mag_part
+dataset/
+model_backup/
+test_result/

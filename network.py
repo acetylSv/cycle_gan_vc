@@ -54,7 +54,7 @@ def build_generator(inputs):
     return h12
 
 def build_discriminator(inputs):
-    # inputs_shape: [batch, w=128, c=513]
+    # inputs_shape: [batch, w=128, c=26]
     # inputs_reshape_shape: [batch, h=513, w=128, c=1]
     inputs = tf.transpose(inputs, [0, 2, 1])
     inputs_reshape = tf.expand_dims(inputs, [-1])
