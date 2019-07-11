@@ -4,13 +4,13 @@
 	tensorflow:  '1.4'
 
 ## Training                                                            
-	<pre><code>python3 gan_train.py</code></pre>
+	python3 gan_train.py
 
 ## Inference
-	<pre><code>python3 gan_test.py</code></pre>
+	python3 gan_test.py
 
 ## Hyperparameter
-	All hyperparameter tuning could be done in <code>hyperparams.py</code>.
+	All hyperparameter tuning could be done in hyperparams.py.
 
 ## Experiments and Samples
 	Currently done on VCTK dataset and can be found in results/
