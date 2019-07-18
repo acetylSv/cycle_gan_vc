@@ -5,7 +5,7 @@
 
 ## Preprocess example script
 Dataset: VCTK
-[Gist link](https://gist.github.com/acetylSv/1a233574234cb4188629c90b49bee1da)
+Example script: [Gist link](https://gist.github.com/acetylSv/1a233574234cb4188629c90b49bee1da)
 
 ## Training                                                            
 	python3 gan_train.py
