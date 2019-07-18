@@ -4,7 +4,7 @@
 	tensorflow:  '1.4'
 
 ## Preprocess example script
-	[Gist link].(https://gist.github.com/acetylSv/1a233574234cb4188629c90b49bee1da)
+[Gist link].(https://gist.github.com/acetylSv/1a233574234cb4188629c90b49bee1da)
 
 ## Training                                                            
 	python3 gan_train.py
